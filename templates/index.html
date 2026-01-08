@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Sudokraft</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<h1>🧩 Sudokraft – Sudoku Solver</h1>
+
+<table id="grid"></table>
+
+<div>
+    <button onclick="generate()">Generate</button>
+    <button onclick="solve()">Solve</button>
+</div>
+
+<script>
+let board = [];
+
+function draw(b){
+    const grid = document.getElementById("grid");
+    grid.innerHTML = "";
+    for(let i=0;i<9;i++){
+        let tr = document.createElement("tr");
+        for(let j=0;j<9;j++){
+            let td = document.createElement("td");
+            let input = document.createElement("input");
+            input.maxLength = 1;
+            input.value = b[i][j] === 0 ? "" : b[i][j];
+            input.oninput = () => {
+                board[i][j] = input.value ? parseInt(input.value) : 0;
+            };
+            td.appendChild(input);
+            tr.appendChild(td);
+        }
+        grid.appendChild(tr);
+    }
+}
+
+function generate(){
+    fetch("/api/generate")
+    .then(r => r.json())
+    .then(d => {
+        board = d.board;
+        draw(board);
+    });
+}
+
+function solve(){
+    fetch("/api/solve",{
+        method:"POST",
+        headers:{ "Content-Type":"application/json" },
+        body: JSON.stringify({ board })
+    })
+    .then(r => r.json())
+    .then(d => {
+        board = d.solution;
+        draw(board);
+    });
+}
+
+generate();
+</script>
+
+</body>
+</html>
